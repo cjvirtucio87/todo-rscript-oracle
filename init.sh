@@ -51,17 +51,6 @@ start_service() {
 
   echo "starting service: ${service_name}";
 
-  # shellcheck disable=SC2154
-  docker run \
-    --tty \
-    --rm \
-    --network "${network_name}" \
-    --env "http_proxy=${http_proxy}" \
-    --env "https_proxy=${https_proxy}" \
-    --env "no_proxy=${no_proxy}" \
-    --name "${service_name}" \
-    "${image_name}" \
-    "$@";
 }
 
 main() {
@@ -108,7 +97,23 @@ main() {
     start_dependency_service "${oracle_name}" "${network_name}" "${oracle_image_name}:${oracle_image_version}";
   fi
 
-  start_service "${runner_name}" "${network_name}" "${runner_image_name}:${runner_image_version}";
+  # shellcheck disable=SC2154
+  docker run \
+    --tty \
+    --rm \
+    --network "${network_name}" \
+    --env "http_proxy=${http_proxy}" \
+    --env "https_proxy=${https_proxy}" \
+    --env "no_proxy=${no_proxy}" \
+    --env "ORACLE_TIMEOUT=20" \
+    --env "ORACLE_HOST=${oracle_name}" \
+    --env "ORACLE_PORT=${oracle_port}" \
+    --env "ORACLE_DB=${oracle_db}" \
+    --env "ORACLE_USER=${oracle_user}" \
+    --env "ORACLE_PASSWORD=${oracle_password}" \
+    --name "${runner_name}" \
+    "${runner_image_name}:${runner_image_version}" \
+    "$@";
 }
 
 main "$@";
