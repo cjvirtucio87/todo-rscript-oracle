@@ -108,9 +108,9 @@ main() {
     --env "ORACLE_TIMEOUT=20" \
     --env "ORACLE_HOST=${oracle_name}" \
     --env "ORACLE_PORT=${oracle_port}" \
-    --env "ORACLE_DB=${oracle_db}" \
-    --env "ORACLE_USER=${oracle_user}" \
-    --env "ORACLE_PASSWORD=${oracle_password}" \
+    --env "ORACLE_DB=${ORACLE_DB}" \
+    --env "ORACLE_USER=${ORACLE_USER}" \
+    --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
     --name "${runner_name}" \
     "${runner_image_name}:${runner_image_version}" \
     "$@";

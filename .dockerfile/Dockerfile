@@ -35,6 +35,10 @@ WORKDIR "${CONTAINER_USER_HOME}"
 USER root
 
 RUN set -e; \
+    curl -o /usr/bin/confd 'https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64'; \
+    chmod u+x /usr/bin/confd;
+
+RUN set -e; \
     rpm --import ${ORACLE_LINUX_URL}/${ORACLE_LINUX_GPG_KEY}; \
     curl -o /etc/yum.repos.d/${ORACLE_LINUX_REPO} ${ORACLE_LINUX_URL}/${ORACLE_LINUX_REPO}; \
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/${ORACLE_LINUX_REPO}; \
