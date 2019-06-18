@@ -1,7 +1,6 @@
 #!/bin/bash
 
 readonly ROOT_DIR="$(dirname "$(readlink -f "$0")")";
-readonly BUILD_DIR="${ROOT_DIR}/.build";
 
 cleanup() {
   local network_name=$1;
@@ -56,9 +55,9 @@ start_service() {
 main() {
   local name='todo';
   local network_name="${name}-net";
-  local oracle_name="${name}-oracle";
   local oracle_image_name="artifacts.mitre.org:8200/asias-etl-oracle";
   local oracle_image_version=1.0.2;
+  local oracle_name="${name}-oracle";
   local runner_name="${name}-runner";
   local runner_image_name="cjvirtucio87/${runner_name}";
   local runner_image_version='latest';
@@ -99,6 +98,7 @@ main() {
 
   # shellcheck disable=SC2154
   docker run \
+    --interactive \
     --tty \
     --rm \
     --network "${network_name}" \
@@ -107,13 +107,12 @@ main() {
     --env "no_proxy=${no_proxy}" \
     --env "ORACLE_TIMEOUT=20" \
     --env "ORACLE_HOST=${oracle_name}" \
-    --env "ORACLE_PORT=${oracle_port}" \
+    --env "ORACLE_PORT=${ORACLE_PORT}" \
     --env "ORACLE_DB=${ORACLE_DB}" \
     --env "ORACLE_USER=${ORACLE_USER}" \
     --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
     --name "${runner_name}" \
-    "${runner_image_name}:${runner_image_version}" \
-    "$@";
+    "${runner_image_name}:${runner_image_version}" 
 }
 
 main "$@";

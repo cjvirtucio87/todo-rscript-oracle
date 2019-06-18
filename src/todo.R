@@ -9,7 +9,7 @@ conn <- dbConnect(drv, username = 'system', password = 'set4now', dbname = 'todo
 
 create_table <- function(conn, sql.path) {
   if (file.exists(sql.path)) {
-    sql.statement <- paste(readLines.sql.path, collapse='\n')
+    sql.statement <- paste(readLines(sql.path), collapse='\n')
 
     print(
           paste(
@@ -19,9 +19,9 @@ create_table <- function(conn, sql.path) {
                 ),
                 collapse='\n'))
     
-    dbSendQuery(conn,.sql.statement)
+    dbSendQuery(conn, sql.statement)
   }
 }
 
-create_table()
+create_table(conn, users.create.sql.path)
 
