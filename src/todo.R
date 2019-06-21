@@ -1,8 +1,27 @@
 library('ROracle')
 library('DBI')
 
+kUsers <- list(
+  data.frame(
+    id = 1,
+    name = 'foo',
+    email_address = 'foo@mail.com'
+  ),
+  data.frame(
+    id = 2,
+    name = 'bar',
+    email_address = 'bar@mail.com'
+  ),
+  data.frame(
+    id = 3,
+    name = 'baz',
+    email_address = 'baz@mail.com'
+  )
+)
+
 sql.folder <- file.path(getwd(), 'sql')
 users.create.sql.path <- file.path(sql.folder, 'create_users.sql')
+users.insert.sql.path <- file.path(sql.folder, 'insert_user.sql')
 
 drv <- dbDriver('Oracle')
 conn <- dbConnect(drv, username = 'system', password = 'set4now', dbname = 'todo-oracle')
@@ -23,5 +42,29 @@ create_table <- function(conn, sql.path) {
   }
 }
 
+insert_user <- function(conn, sql.path, data) {
+  if (file.exists(sql.path)) {
+    sql.statement <- paste(readLines(sql.path), collapse='\n')
+
+    print(
+          paste(
+                c(
+                  "inserting user into table using statement:", 
+                  sql.statement
+                ),
+                collapse='\n'))
+    
+    dbSendQuery(conn, sql.statement, data)
+  }
+}
+
+print('creating users table')
+
 create_table(conn, users.create.sql.path)
+
+print('inserting users')
+
+for (user in kUsers) {
+  insert_user(conn, users.insert.sql.path, user)
+}
 
