@@ -22,6 +22,7 @@ kUsers <- list(
 sql.folder <- file.path(getwd(), 'sql')
 users.create.sql.path <- file.path(sql.folder, 'create_users.sql')
 users.insert.sql.path <- file.path(sql.folder, 'insert_user.sql')
+users.select.sql.path <- file.path(sql.folder, 'select_user.sql')
 
 drv <- dbDriver('Oracle')
 conn <- dbConnect(drv, username = 'system', password = 'set4now', dbname = 'todo-oracle')
@@ -58,6 +59,22 @@ insert_user <- function(conn, sql.path, data) {
   }
 }
 
+select_user <- function(conn, sql.path) {
+  if (file.exists(sql.path)) {
+    sql.statement <- paste(readLines(sql.path), collapse='\n')
+
+    print(
+          paste(
+                c(
+                  "selecting user with statement:", 
+                  sql.statement
+                ),
+                collapse='\n'))
+    
+    return(dbSendQuery(conn, sql.statement))
+  }
+}
+
 print('creating users table')
 
 create_table(conn, users.create.sql.path)
@@ -67,4 +84,11 @@ print('inserting users')
 for (user in kUsers) {
   insert_user(conn, users.insert.sql.path, user)
 }
+
+res <- select_user(conn, users.select.sql.path)
+
+# need to fetch before the result gets populated with anything
+fetch(res)
+
+print(dbColumnInfo(res))
 

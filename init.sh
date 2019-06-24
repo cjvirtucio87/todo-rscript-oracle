@@ -105,7 +105,7 @@ main() {
     --env "http_proxy=${http_proxy}" \
     --env "https_proxy=${https_proxy}" \
     --env "no_proxy=${no_proxy}" \
-    --env "ORACLE_TIMEOUT=20" \
+    --env "ORACLE_TIMEOUT=60" \
     --env "ORACLE_HOST=${oracle_name}" \
     --env "ORACLE_PORT=${ORACLE_PORT}" \
     --env "ORACLE_DB=${ORACLE_DB}" \
