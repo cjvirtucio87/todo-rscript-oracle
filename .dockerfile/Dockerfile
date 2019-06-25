@@ -55,16 +55,16 @@ RUN set -e; \
     echo "${ORACLE_HOME}/lib" > '/etc/ld.so.conf.d/oracle.conf'; \
     ldconfig;
 
-COPY . "${CONTAINER_USER_HOME}/rscript"
+COPY rscript "${CONTAINER_USER_HOME}/rscript"
 
 RUN set -e; \
-    cd "${HOME}/rscript"; \ 
+    cd "${CONTAINER_USER_HOME}/rscript"; \ 
     R -e "install.packages('packrat', repos='${R_PACKAGES_MIRROR}')"; \
     R -e "packrat::restore()";
 
 COPY .dockerfile/docker-entrypoint.sh "/docker-entrypoint.sh"
 
-WORKDIR "${HOME}/rscript"
+WORKDIR "${CONTAINER_USER_HOME}/rscript"
 
 USER "${CONTAINER_USER}"
 
