@@ -28,12 +28,6 @@ RUN set -e; \
       "${CONTAINER_USER}"; \
     chmod -R a+x /usr/local/bin;
 
-ENV HOME="${CONTAINER_USER_HOME}"
-USER "${CONTAINER_USER}"
-WORKDIR "${CONTAINER_USER_HOME}"
-
-USER root
-
 RUN set -e; \
     curl -o /usr/bin/confd 'https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64'; \
     chmod u+x /usr/bin/confd;
@@ -43,6 +37,8 @@ RUN set -e; \
     curl -o /etc/yum.repos.d/${ORACLE_LINUX_REPO} ${ORACLE_LINUX_URL}/${ORACLE_LINUX_REPO}; \
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/${ORACLE_LINUX_REPO}; \
     yum-config-manager --enable ol7_oracle_instantclient; \
+    yum install -y epel-release; \
+    yum update -y; \
     ACCEPT_EULA=Y yum install -y \
       libaio-devel \
       oracle-instantclient18.3-basic \
@@ -50,6 +46,7 @@ RUN set -e; \
       oracle-instantclient18.3-tools \
       oracle-instantclient18.3-devel \
       R; \
+    yum clean all; \
     mkdir -p "${ORACLE_HOME}/rdbms/public"; \
     mkdir "${CONTAINER_USER_HOME}/rscript"; \
     echo "${ORACLE_HOME}/lib" > '/etc/ld.so.conf.d/oracle.conf'; \
@@ -66,7 +63,9 @@ COPY .dockerfile/docker-entrypoint.sh "/docker-entrypoint.sh"
 
 WORKDIR "${CONTAINER_USER_HOME}/rscript"
 
+ENV HOME="${CONTAINER_USER_HOME}"
 USER "${CONTAINER_USER}"
+WORKDIR "${CONTAINER_USER_HOME}"
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
