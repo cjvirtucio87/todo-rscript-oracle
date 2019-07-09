@@ -1,6 +1,8 @@
 #!/bin/bash
 
 readonly ROOT_DIR="$(dirname "$(readlink -f "$0")")";
+readonly ORACLE_IMAGE_NAME="${ORACLE_IMAGE_NAME:-orangehrm/oracle-xe-11g}";
+readonly ORACLE_IMAGE_TAG="${ORACLE_IMAGE_TAG:-latest}";
 
 cleanup() {
   local network_name=$1;
@@ -40,23 +42,9 @@ start_dependency_service() {
     "$@";
 }
 
-start_service() {
-  local service_name=$1;
-  shift;
-  local network_name=$1;
-  shift;
-  local image_name=$1;
-  shift;
-
-  echo "starting service: ${service_name}";
-
-}
-
 main() {
   local name='todo';
   local network_name="${name}-net";
-  local oracle_image_name="artifacts.mitre.org:8200/asias-etl-oracle";
-  local oracle_image_version=1.0.2;
   local oracle_name="${name}-oracle";
   local runner_name="${name}-runner";
   local runner_image_name="cjvirtucio87/${runner_name}";
@@ -93,7 +81,7 @@ main() {
   if [[ -n "$(docker container ps -af "name=${oracle_name}" --format '{{.ID}}')" ]]; then
     echo "service ${oracle_name} already exists; skipping creation";
   else
-    start_dependency_service "${oracle_name}" "${network_name}" "${oracle_image_name}:${oracle_image_version}";
+    start_dependency_service "${oracle_name}" "${network_name}" "${ORACLE_IMAGE_NAME}:${ORACLE_IMAGE_TAG}";
   fi
 
   # shellcheck disable=SC2154
