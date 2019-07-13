@@ -61,11 +61,9 @@ RUN set -e; \
 
 COPY .dockerfile/docker-entrypoint.sh "/docker-entrypoint.sh"
 
-WORKDIR "${CONTAINER_USER_HOME}/rscript"
-
 ENV HOME="${CONTAINER_USER_HOME}"
 USER "${CONTAINER_USER}"
-WORKDIR "${CONTAINER_USER_HOME}"
+WORKDIR "${CONTAINER_USER_HOME}/rscript"
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
