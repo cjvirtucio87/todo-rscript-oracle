@@ -41,6 +41,7 @@ main() {
   fi
 
   if [[ -n "${REBUILD}" ]]; then
+    echo "removing runner image, ${runner_image_name}";
     docker image rm "${runner_image_name}";
   fi
 
@@ -69,23 +70,45 @@ main() {
   fi
 
   echo 'running runner container';
-  # shellcheck disable=SC2154
-  docker run \
-    --interactive \
-    --tty \
-    --rm \
-    --network "${network_name}" \
-    --env "http_proxy=${http_proxy}" \
-    --env "https_proxy=${https_proxy}" \
-    --env "no_proxy=${no_proxy}" \
-    --env "ORACLE_TIMEOUT=60" \
-    --env "ORACLE_HOST=${oracle_name}" \
-    --env "ORACLE_PORT=${ORACLE_PORT}" \
-    --env "ORACLE_DB=${ORACLE_SID}" \
-    --env "ORACLE_USER=${ORACLE_USER}" \
-    --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
-    --name "${runner_name}" \
-    "${runner_image_name}:${runner_image_version}" 
+
+  if [[ -n "${VERIFY_DEBUG}" ]]; then
+    # shellcheck disable=SC2154
+    docker run \
+      --entrypoint='' \
+      --interactive \
+      --tty \
+      --rm \
+      --network "${network_name}" \
+      --env "http_proxy=${http_proxy}" \
+      --env "https_proxy=${https_proxy}" \
+      --env "no_proxy=${no_proxy}" \
+      --env "ORACLE_TIMEOUT=60" \
+      --env "ORACLE_HOST=${oracle_name}" \
+      --env "ORACLE_PORT=${ORACLE_PORT}" \
+      --env "ORACLE_DB=${ORACLE_SID}" \
+      --env "ORACLE_USER=${ORACLE_USER}" \
+      --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
+      --name "${runner_name}" \
+      "${runner_image_name}:${runner_image_version}" \
+      '/bin/bash'
+  else
+    # shellcheck disable=SC2154
+    docker run \
+      --tty \
+      --rm \
+      --network "${network_name}" \
+      --env "http_proxy=${http_proxy}" \
+      --env "https_proxy=${https_proxy}" \
+      --env "no_proxy=${no_proxy}" \
+      --env "ORACLE_TIMEOUT=60" \
+      --env "ORACLE_HOST=${oracle_name}" \
+      --env "ORACLE_PORT=${ORACLE_PORT}" \
+      --env "ORACLE_DB=${ORACLE_SID}" \
+      --env "ORACLE_USER=${ORACLE_USER}" \
+      --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
+      --name "${runner_name}" \
+      "${runner_image_name}:${runner_image_version}" 
+  fi
 }
 
 main "$@";
