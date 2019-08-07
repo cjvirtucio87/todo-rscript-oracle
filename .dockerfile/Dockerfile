@@ -5,7 +5,7 @@ ENV CONTAINER_USER_HOME="/home/${CONTAINER_USER}"
 
 ARG R_PACKAGES_MIRROR=http://rweb.crmda.ku.edu/cran/
 ENV ORACLE_LINUX_VERSION=ol7 \
-    ORACLE_INSTANT_CLIENT_VERSION=18.3
+    ORACLE_INSTANT_CLIENT_VERSION=19.3
 ENV ORACLE_HOME=/usr/lib/oracle/${ORACLE_INSTANT_CLIENT_VERSION}/client64
 ENV ORACLE_LINUX_URL=https://yum.oracle.com \
     ORACLE_LINUX_REPO=public-yum-${ORACLE_LINUX_VERSION}.repo \
@@ -26,11 +26,20 @@ RUN set -e; \
       -d "${CONTAINER_USER_HOME}" \
       -g 0 \
       "${CONTAINER_USER}"; \
-    chmod -R a+x /usr/local/bin;
+    chgrp -R 0 /usr/local/bin; \
+    chmod -R g+x /usr/local/bin;
+
+ENV HOME="${CONTAINER_USER_HOME}"
+USER "${CONTAINER_USER}"
+WORKDIR "${CONTAINER_USER_HOME}"
+
+USER root
 
 RUN set -e; \
-    curl -o /usr/bin/confd 'https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64'; \
-    chmod u+x /usr/bin/confd;
+    curl -Lo /usr/bin/confd 'https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64'; \
+    chmod u+x /usr/bin/confd; \
+    chgrp 0 /usr/bin/confd; \
+    chmod g+u /usr/bin/confd;
 
 RUN set -e; \
     rpm --import ${ORACLE_LINUX_URL}/${ORACLE_LINUX_GPG_KEY}; \
@@ -41,25 +50,28 @@ RUN set -e; \
     yum update -y; \
     ACCEPT_EULA=Y yum install -y \
       libaio-devel \
-      oracle-instantclient18.3-basic \
-      oracle-instantclient18.3-sqlplus \
-      oracle-instantclient18.3-tools \
-      oracle-instantclient18.3-devel \
+      "oracle-instantclient${ORACLE_INSTANT_CLIENT_VERSION}-basic" \
+      "oracle-instantclient${ORACLE_INSTANT_CLIENT_VERSION}-sqlplus" \
+      "oracle-instantclient${ORACLE_INSTANT_CLIENT_VERSION}-tools" \
+      "oracle-instantclient${ORACLE_INSTANT_CLIENT_VERSION}-devel" \
+      vim \
       R; \
     yum clean all; \
     mkdir -p "${ORACLE_HOME}/rdbms/public"; \
     mkdir "${CONTAINER_USER_HOME}/rscript"; \
-    echo "${ORACLE_HOME}/lib" > '/etc/ld.so.conf.d/oracle.conf'; \
-    ldconfig;
+    echo "${ORACLE_HOME}/lib" > '/etc/ld.so.conf.d/oracle.conf';
 
 COPY rscript "${CONTAINER_USER_HOME}/rscript"
 
 RUN set -e; \
+    chgrp -R 0 "${CONTAINER_USER_HOME}"; \
+    chmod -R g+u "${CONTAINER_USER_HOME}"; \
     cd "${CONTAINER_USER_HOME}/rscript"; \ 
     R -e "install.packages('packrat', repos='${R_PACKAGES_MIRROR}')"; \
     R -e "packrat::restore()";
 
 COPY .dockerfile/docker-entrypoint.sh "/docker-entrypoint.sh"
+COPY .dockerfile/rscript/confd "${CONTAINER_USER_HOME}/rscript/confd"
 
 ENV HOME="${CONTAINER_USER_HOME}"
 USER "${CONTAINER_USER}"

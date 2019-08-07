@@ -1,0 +1,9 @@
+[template]
+src = "config.yml.tmpl"
+dest = "/home/foo/rscript/config.yml"
+mode = "0660"
+keys = [
+    '/app/oracle/user',
+    '/app/oracle/host',
+    '/app/oracle/password',
+]

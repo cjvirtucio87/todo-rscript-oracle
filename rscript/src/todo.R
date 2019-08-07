@@ -1,5 +1,8 @@
+library('config')
 library('ROracle')
 library('DBI')
+
+cfg <- config::get()
 
 kUsers <- list(
   data.frame(
@@ -25,7 +28,7 @@ users.insert.sql.path <- file.path(sql.folder, 'insert_user.sql')
 users.select.sql.path <- file.path(sql.folder, 'select_user.sql')
 
 drv <- dbDriver('Oracle')
-conn <- dbConnect(drv, username = 'system', password = 'set4now', dbname = 'todo-oracle')
+conn <- dbConnect(drv, username = cfg$oracle$username, password = cfg$oracle$password, dbname = cfg$oracle$host)
 
 create_table <- function(conn, sql.path) {
   if (file.exists(sql.path)) {

@@ -1,5 +1,5 @@
 #!/bin/bash
-function healthcheck_oracle {
+healthcheck_oracle() {
     local timeout;
     local host;
     local port;
@@ -41,7 +41,7 @@ function healthcheck_oracle {
         fi
 
         # https://stackoverflow.com/a/3779738/2346823
-        if echo "exit" | "${ORACLE_HOME}/bin/sqlplus" -L "${user}/${pw}@//${host}:${port}/${db}" | grep Connected > /dev/null; then
+        if echo "exit" | "${APP_ORACLE_HOME}/bin/sqlplus" -L "${user}/${pw}@//${host}:${port}/${db}" | grep Connected > /dev/null; then
             echo "oracle: ok"
             break;
         fi
@@ -51,16 +51,26 @@ function healthcheck_oracle {
     done
 }
 
-healthcheck_oracle \
-  -t "${ORACLE_TIMEOUT}" \
-  -h "${ORACLE_HOST}" \
-  -p "${ORACLE_PORT}" \
-  -d "${ORACLE_DB}" \
-  -u "${ORACLE_USER}" \
-  -w "${ORACLE_PASSWORD}";
+main() {
+  healthcheck_oracle \
+    -t "${APP_ORACLE_TIMEOUT}" \
+    -h "${APP_ORACLE_HOST}" \
+    -p "${APP_ORACLE_PORT}" \
+    -d "${APP_ORACLE_DB}" \
+    -u "${APP_ORACLE_USER}" \
+    -w "${APP_ORACLE_PASSWORD}";
 
-echo "executing todo.R";
+  echo 'templating config.yml';
 
-Rscript "${HOME}/rscript/src/todo.R";
+  confd -onetime -backend 'env' -confdir 'confd' -log-level 'debug' 
 
-echo "done!";
+  cat config.yml
+
+  echo "executing todo.R";
+
+  Rscript 'src/todo.R';
+
+  echo "done!";
+}
+
+main "$@";

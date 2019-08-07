@@ -1,13 +1,13 @@
 #!/bin/bash
 
 readonly ROOT_DIR="$(dirname "$(readlink -f "$0")")";
-readonly ORACLE_IMAGE_NAME="${ORACLE_IMAGE_NAME:-orangehrm/oracle-xe-11g}";
-readonly ORACLE_IMAGE_TAG="${ORACLE_IMAGE_TAG:-latest}";
-readonly ORACLE_PASSWORD="${ORACLE_PASSWORD:-oracle}";
-readonly ORACLE_SID="${ORACLE_SID:-xe}";
-readonly ORACLE_PORT="${ORACLE_PORT:-1521}";
-readonly ORACLE_SHM_SIZE="${ORACLE_SHM_SIZE:-2g}";
-readonly ORACLE_USER="${ORACLE_USER:-system}";
+readonly APP_ORACLE_IMAGE_NAME="${APP_ORACLE_IMAGE_NAME:-orangehrm/oracle-xe-11g}";
+readonly APP_ORACLE_IMAGE_TAG="${APP_ORACLE_IMAGE_TAG:-latest}";
+readonly APP_ORACLE_PASSWORD="${APP_ORACLE_PASSWORD:-oracle}";
+readonly APP_ORACLE_SID="${APP_ORACLE_SID:-xe}";
+readonly APP_ORACLE_PORT="${APP_ORACLE_PORT:-1521}";
+readonly APP_ORACLE_SHM_SIZE="${APP_ORACLE_SHM_SIZE:-2g}";
+readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
 
 cleanup() {
   local network_name=$1;
@@ -64,14 +64,14 @@ main() {
       --detach \
       --rm \
       --network "${network_name}" \
-      --shm-size="${ORACLE_SHM_SIZE}" \
+      --shm-size="${APP_ORACLE_SHM_SIZE}" \
       --name "${oracle_name}" \
-      "${ORACLE_IMAGE_NAME}:${ORACLE_IMAGE_TAG}" 
+      "${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" 
   fi
 
   echo 'running runner container';
 
-  if [[ -n "${VERIFY_DEBUG}" ]]; then
+  if [ -n "${TEST_DEBUG+x}" ]; then
     # shellcheck disable=SC2154
     docker run \
       --entrypoint='' \
@@ -82,12 +82,12 @@ main() {
       --env "http_proxy=${http_proxy}" \
       --env "https_proxy=${https_proxy}" \
       --env "no_proxy=${no_proxy}" \
-      --env "ORACLE_TIMEOUT=60" \
-      --env "ORACLE_HOST=${oracle_name}" \
-      --env "ORACLE_PORT=${ORACLE_PORT}" \
-      --env "ORACLE_DB=${ORACLE_SID}" \
-      --env "ORACLE_USER=${ORACLE_USER}" \
-      --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
+      --env "APP_ORACLE_TIMEOUT=60" \
+      --env "APP_ORACLE_HOST=${oracle_name}" \
+      --env "APP_ORACLE_PORT=${APP_ORACLE_PORT}" \
+      --env "APP_ORACLE_DB=${APP_ORACLE_SID}" \
+      --env "APP_ORACLE_USER=${APP_ORACLE_USER}" \
+      --env "APP_ORACLE_PASSWORD=${APP_ORACLE_PASSWORD}" \
       --name "${runner_name}" \
       "${runner_image_name}:${runner_image_version}" \
       '/bin/bash'
@@ -100,12 +100,12 @@ main() {
       --env "http_proxy=${http_proxy}" \
       --env "https_proxy=${https_proxy}" \
       --env "no_proxy=${no_proxy}" \
-      --env "ORACLE_TIMEOUT=60" \
-      --env "ORACLE_HOST=${oracle_name}" \
-      --env "ORACLE_PORT=${ORACLE_PORT}" \
-      --env "ORACLE_DB=${ORACLE_SID}" \
-      --env "ORACLE_USER=${ORACLE_USER}" \
-      --env "ORACLE_PASSWORD=${ORACLE_PASSWORD}" \
+      --env "APP_ORACLE_TIMEOUT=60" \
+      --env "APP_ORACLE_HOST=${oracle_name}" \
+      --env "APP_ORACLE_PORT=${APP_ORACLE_PORT}" \
+      --env "APP_ORACLE_DB=${APP_ORACLE_SID}" \
+      --env "APP_ORACLE_USER=${APP_ORACLE_USER}" \
+      --env "APP_ORACLE_PASSWORD=${APP_ORACLE_PASSWORD}" \
       --name "${runner_name}" \
       "${runner_image_name}:${runner_image_version}" 
   fi
