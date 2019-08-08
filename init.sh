@@ -55,6 +55,13 @@ main() {
     -f "${ROOT_DIR}/.dockerfile/Dockerfile" \
     .
 
+  local common_network_args=(
+      --network "${network_name}" \
+      --env "http_proxy=${http_proxy}" \
+      --env "https_proxy=${https_proxy}" \
+      --env "no_proxy=${no_proxy}"
+  )
+
   if [[ -n "$(docker container ps -af "name=${oracle_name}" --format '{{.ID}}')" ]]; then
     echo "service ${oracle_name} already exists; skipping creation";
   else
@@ -63,13 +70,22 @@ main() {
       --tty \
       --detach \
       --rm \
-      --network "${network_name}" \
+      "${common_network_args[@]}" \
       --shm-size="${APP_ORACLE_SHM_SIZE}" \
       --name "${oracle_name}" \
       "${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" 
   fi
 
   echo 'running runner container';
+
+  local common_runner_args=(
+      --env "APP_ORACLE_TIMEOUT=60" \
+      --env "APP_ORACLE_HOST=${oracle_name}" \
+      --env "APP_ORACLE_PORT=${APP_ORACLE_PORT}" \
+      --env "APP_ORACLE_DB=${APP_ORACLE_SID}" \
+      --env "APP_ORACLE_USER=${APP_ORACLE_USER}" \
+      --env "APP_ORACLE_PASSWORD=${APP_ORACLE_PASSWORD}"
+  )
 
   if [ -n "${TEST_DEBUG+x}" ]; then
     # shellcheck disable=SC2154
@@ -78,16 +94,8 @@ main() {
       --interactive \
       --tty \
       --rm \
-      --network "${network_name}" \
-      --env "http_proxy=${http_proxy}" \
-      --env "https_proxy=${https_proxy}" \
-      --env "no_proxy=${no_proxy}" \
-      --env "APP_ORACLE_TIMEOUT=60" \
-      --env "APP_ORACLE_HOST=${oracle_name}" \
-      --env "APP_ORACLE_PORT=${APP_ORACLE_PORT}" \
-      --env "APP_ORACLE_DB=${APP_ORACLE_SID}" \
-      --env "APP_ORACLE_USER=${APP_ORACLE_USER}" \
-      --env "APP_ORACLE_PASSWORD=${APP_ORACLE_PASSWORD}" \
+      "${common_network_args[@]}" \
+      "${common_runner_args[@]}" \
       --name "${runner_name}" \
       "${runner_image_name}:${runner_image_version}" \
       '/bin/bash'
@@ -96,16 +104,8 @@ main() {
     docker run \
       --tty \
       --rm \
-      --network "${network_name}" \
-      --env "http_proxy=${http_proxy}" \
-      --env "https_proxy=${https_proxy}" \
-      --env "no_proxy=${no_proxy}" \
-      --env "APP_ORACLE_TIMEOUT=60" \
-      --env "APP_ORACLE_HOST=${oracle_name}" \
-      --env "APP_ORACLE_PORT=${APP_ORACLE_PORT}" \
-      --env "APP_ORACLE_DB=${APP_ORACLE_SID}" \
-      --env "APP_ORACLE_USER=${APP_ORACLE_USER}" \
-      --env "APP_ORACLE_PASSWORD=${APP_ORACLE_PASSWORD}" \
+      "${common_network_args[@]}" \
+      "${common_runner_args[@]}" \
       --name "${runner_name}" \
       "${runner_image_name}:${runner_image_version}" 
   fi
