@@ -28,7 +28,7 @@ users.insert.sql.path <- file.path(sql.folder, 'insert_user.sql')
 users.select.sql.path <- file.path(sql.folder, 'select_user.sql')
 
 drv <- dbDriver('Oracle')
-conn <- dbConnect(drv, username = cfg$oracle$username, password = cfg$oracle$password, dbname = cfg$oracle$host)
+conn <- dbConnect(drv, username = cfg$oracle$user, password = cfg$oracle$password, dbname = cfg$oracle$host)
 
 create_table <- function(conn, sql.path) {
   if (file.exists(sql.path)) {
