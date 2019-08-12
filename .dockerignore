@@ -13,3 +13,6 @@
 .vscode
 
 packrat/lib*/
+
+# scripts
+./*.sh
