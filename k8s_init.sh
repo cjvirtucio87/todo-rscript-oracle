@@ -30,7 +30,7 @@ main() {
     -f "${ROOT_DIR}/.dockerfile/Dockerfile" \
     .
 
-  echo 'running oracle container';
+  echo 'running oracle controller';
   cat "${ROOT_DIR}/.kube/oracledb.yml" \
     | oracle_rc_name="${oracle_rc_name}" \
       oracle_pod_name="${oracle_pod_name}" \
@@ -45,7 +45,7 @@ main() {
       envsubst \
     | oc create -f -
 
-  echo 'running runner container';
+  echo 'running runner controller';
   cat "${ROOT_DIR}/.kube/runner.yml" \
     | runner_job_name="${runner_job_name}" \
       runner_pod_name="${runner_pod_name}" \
