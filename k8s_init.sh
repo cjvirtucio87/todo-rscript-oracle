@@ -16,6 +16,8 @@ main() {
   local oracle_pod_name="${name}-oracle-pod";
   local oracle_rc_name="${name}-oracle-rc";
   local runner_name="${name}-runner";
+  local runner_pod_name="${name}-runner-pod";
+  local runner_job_name="${name}-runner-job";
   local runner_image_name="cjvirtucio87/${runner_name}";
   local runner_image_version='latest';
 
@@ -40,6 +42,16 @@ main() {
       oracle_host="localhost" \
       oracle_port="${APP_ORACLE_PORT}" \
       oracle_db="${APP_ORACLE_DB}" \
+      envsubst \
+    | oc create -f -
+
+  echo 'running runner container';
+  cat "${ROOT_DIR}/.kube/runner.yml" \
+    | runner_job_name="${runner_job_name}" \
+      runner_pod_name="${runner_pod_name}" \
+      env="${APP_ENV}" \
+      runner_image="${runner_image_name}:${runner_image_version}" \
+      runner_name=${runner_name} \
       envsubst \
     | oc create -f -
 }
