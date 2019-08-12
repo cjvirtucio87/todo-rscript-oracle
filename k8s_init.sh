@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly ROOT_DIR="$(dirname "$(readlink -f "$0")")";
+readonly APP_ENV='dev';
 readonly APP_ORACLE_IMAGE_NAME="${APP_ORACLE_IMAGE_NAME:-orangehrm/oracle-xe-11g}";
 readonly APP_ORACLE_IMAGE_TAG="${APP_ORACLE_IMAGE_TAG:-latest}";
 readonly APP_ORACLE_PASSWORD="${APP_ORACLE_PASSWORD:-oracle}";
@@ -12,7 +13,8 @@ readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
 main() {
   local name='todo';
   local oracle_name="${name}-oracle";
-  local oracle_selector="${oracle_name}=default";
+  local oracle_pod_name="${name}-oracle-pod";
+  local oracle_rc_name="${name}-oracle-rc";
   local runner_name="${name}-runner";
   local runner_image_name="cjvirtucio87/${runner_name}";
   local runner_image_version='latest';
@@ -27,19 +29,19 @@ main() {
     .
 
   echo 'running oracle container';
-  oc run "${oracle_name}" \
-    --image="${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" \
-    --requests="${APP_ORACLE_REQUESTS}" \
-    --labels="${oracle_selector}" \
-    --replicas=3 \
-    --port=1521 \
-    --generator=run/v1 \
-    "${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}"
-
-  oc expose rc "${oracle_name}" \
-    --selector="${oracle_selector}" \
-    --port="${APP_ORACLE_PORT}" \
-    --target-port="${APP_ORACLE_PORT}";
+  cat "${ROOT_DIR}/.kube/oracledb.yml" \
+    | oracle_rc_name="${oracle_rc_name}" \
+      oracle_pod_name="${oracle_pod_name}" \
+      env="${APP_ENV}" \
+      oracle_image="${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" \
+      oracle_name=${oracle_name} \
+      oracle_user="${APP_ORACLE_USER}" \
+      oracle_pw="${APP_ORACLE_PASSWORD}" \
+      oracle_host="localhost" \
+      oracle_port="${APP_ORACLE_PORT}" \
+      oracle_db="${APP_ORACLE_DB}" \
+      envsubst \
+    | oc create -f -
 }
 
 main "$@";
