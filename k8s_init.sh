@@ -21,7 +21,13 @@ main() {
   local runner_pod_name="${name}-runner-pod";
   local runner_job_name="${name}-runner-job";
   local runner_image_name="${runner_name}";
-  local runner_image_version='latest';
+  local runner_image_version="latest";
+
+  echo 'creating image stream';
+  cat "${KUBE_DIR}/runner_imagestream.yml" \
+    | runner_image_name="${runner_image_name}" \
+      envsubst \
+    | oc create -f -
 
   echo 'creating build config';
   cat "${KUBE_DIR}/runner_build.yml" \
@@ -36,34 +42,37 @@ main() {
       app_oracle_user="${APP_ORACLE_USER}" \
       app_oracle_password="${APP_ORACLE_PASSWORD}" \
       dockerfile_path=".dockerfile/Dockerfile" \
-      runner_image="${runner_image_name}:${runner_image_version}" \
+      runner_image_name="${runner_image_name}" \
+      runner_image_version="${runner_image_version}" \
       envsubst \
     | oc create -f -
 
-#  echo 'running oracle controller';
-#  cat "${ROOT_DIR}/.kube/oracledb.yml" \
-#    | oracle_rc_name="${oracle_rc_name}" \
-#      oracle_pod_name="${oracle_pod_name}" \
-#      env="${APP_ENV}" \
-#      oracle_image="${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" \
-#      oracle_name=${oracle_name} \
-#      oracle_user="${APP_ORACLE_USER}" \
-#      oracle_pw="${APP_ORACLE_PASSWORD}" \
-#      oracle_host="localhost" \
-#      oracle_port="${APP_ORACLE_PORT}" \
-#      oracle_db="${APP_ORACLE_DB}" \
-#      envsubst \
-#    | oc create -f -
-#
-#  echo 'running runner controller';
-#  cat "${ROOT_DIR}/.kube/runner.yml" \
-#    | runner_job_name="${runner_job_name}" \
-#      runner_pod_name="${runner_pod_name}" \
-#      env="${APP_ENV}" \
-#      runner_image="${runner_image_name}:${runner_image_version}" \
-#      runner_name=${runner_name} \
-#      envsubst \
-#    | oc create -f -
+  oc start-build "bc/${runner_build_name}"
+
+  echo 'running oracle controller';
+  cat "${ROOT_DIR}/.kube/oracledb.yml" \
+    | oracle_rc_name="${oracle_rc_name}" \
+      oracle_pod_name="${oracle_pod_name}" \
+      env="${APP_ENV}" \
+      oracle_image="${APP_ORACLE_IMAGE_NAME}:${APP_ORACLE_IMAGE_TAG}" \
+      oracle_name=${oracle_name} \
+      oracle_user="${APP_ORACLE_USER}" \
+      oracle_pw="${APP_ORACLE_PASSWORD}" \
+      oracle_host="localhost" \
+      oracle_port="${APP_ORACLE_PORT}" \
+      oracle_db="${APP_ORACLE_DB}" \
+      envsubst \
+    | oc create -f -
+
+  echo 'running runner controller';
+  cat "${ROOT_DIR}/.kube/runner.yml" \
+    | runner_job_name="${runner_job_name}" \
+      runner_pod_name="${runner_pod_name}" \
+      env="${APP_ENV}" \
+      runner_image="${runner_image_name}" \
+      runner_name=${runner_name} \
+      envsubst \
+    | oc create -f -
 }
 
 main "$@";
