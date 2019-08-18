@@ -10,6 +10,23 @@ readonly APP_ORACLE_SID="${APP_ORACLE_SID:-xe}";
 readonly APP_ORACLE_PORT="${APP_ORACLE_PORT:-1521}";
 readonly APP_ORACLE_REQUESTS="${APP_ORACLE_REQUESTS:-cpu=1,memory=2G}";
 readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
+readonly APP_SSH_PRIVATE_KEY="${APP_SSH_PRIVATE_KEY:-${HOME}/.ssh/id_rsa}";
+readonly APP_SSH_PUBLIC_KEY="${APP_SSH_PUBLIC_KEY:-${HOME}/.ssh/id_rsa.pub}";
+
+cleanup() {
+  local runner_job_name="$1";
+  local runner_build_name="$2";
+  local runner_image_name="$3";
+  local runner_ssh_secret_name="$4";
+  local oracle_rc_name="$5";
+
+  oc delete job "${runner_job_name}";
+  oc delete bc "${runner_build_name}";
+  oc delete imagestream "${runner_image_name}";
+  oc secrets unlink builder "${runner_ssh_secret_name}";
+  oc delete secret "${runner_ssh_secret_name}";
+  oc delete "${oracle_rc_name}";
+}
 
 main() {
   local name='todo';
@@ -18,10 +35,21 @@ main() {
   local oracle_rc_name="${name}-oracle-rc";
   local runner_name="${name}-runner";
   local runner_build_name="${name}-runner-build";
+  local runner_ssh_secret_name="${name}-runner-ssh-key";
   local runner_pod_name="${name}-runner-pod";
   local runner_job_name="${name}-runner-job";
   local runner_image_name="${runner_name}";
   local runner_image_version="latest";
+
+  if [[ "${CLEANUP_AFTER}" ]]; then
+    trap cleanup EXIT
+  fi
+
+  oc create secret generic ${runner_ssh_secret_name} \
+    --from-file=ssh-privatekey="${APP_SSH_PRIVATE_KEY}" \
+    --from-file=ssh-publickey="${APP_SSH_PUBLIC_KEY}"
+
+  oc secrets link builder "${runner_ssh_secret_name}";
 
   echo 'creating image stream';
   cat "${KUBE_DIR}/runner_imagestream.yml" \
@@ -44,6 +72,7 @@ main() {
       dockerfile_path=".dockerfile/Dockerfile" \
       runner_image_name="${runner_image_name}" \
       runner_image_version="${runner_image_version}" \
+      runner_ssh_secret_name="${runner_ssh_secret_name}" \
       envsubst \
     | oc create -f -
 
