@@ -25,7 +25,7 @@ cleanup() {
   oc delete imagestream "${runner_image_name}";
   oc secrets unlink builder "${runner_ssh_secret_name}";
   oc delete secret "${runner_ssh_secret_name}";
-  oc delete "${oracle_rc_name}";
+  oc delete rc "${oracle_rc_name}";
 }
 
 main() {
@@ -42,7 +42,7 @@ main() {
   local runner_image_version="latest";
 
   if [[ "${CLEANUP_AFTER}" ]]; then
-    trap cleanup EXIT
+    trap "cleanup ${runner_job_name} ${runner_build_name} ${runner_image_name} ${runner_ssh_secret_name} ${oracle_rc_name}"  EXIT
   fi
 
   oc create secret generic ${runner_ssh_secret_name} \
