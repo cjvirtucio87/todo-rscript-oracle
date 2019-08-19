@@ -18,13 +18,15 @@ cleanup() {
   local runner_build_name="$2";
   local runner_image_name="$3";
   local runner_ssh_secret_name="$4";
-  local oracle_rc_name="$5";
+  local oracle_service_name="$5";
+  local oracle_rc_name="$6";
 
   oc delete job "${runner_job_name}";
   oc delete bc "${runner_build_name}";
   oc delete imagestream "${runner_image_name}";
   oc secrets unlink builder "${runner_ssh_secret_name}";
   oc delete secret "${runner_ssh_secret_name}";
+  oc delete service "${oracle_service_name}";
   oc delete rc "${oracle_rc_name}";
 }
 
@@ -33,6 +35,7 @@ main() {
   local oracle_name="${name}-oracle";
   local oracle_pod_name="${name}-oracle-pod";
   local oracle_rc_name="${name}-oracle-rc";
+  local oracle_service_name="${name}-oracle-service";
   local runner_name="${name}-runner";
   local runner_build_name="${name}-runner-build";
   local runner_ssh_secret_name="${name}-runner-ssh-key";
@@ -42,7 +45,7 @@ main() {
   local runner_image_version="latest";
 
   if [[ "${CLEANUP_AFTER}" ]]; then
-    trap "cleanup ${runner_job_name} ${runner_build_name} ${runner_image_name} ${runner_ssh_secret_name} ${oracle_rc_name}"  EXIT
+    trap "cleanup ${runner_job_name} ${runner_build_name} ${runner_image_name} ${runner_ssh_secret_name} ${oracle_service_name} ${oracle_rc_name}"  EXIT
   fi
 
   oc create secret generic ${runner_ssh_secret_name} \
@@ -77,6 +80,13 @@ main() {
     | oc create -f -
 
   oc start-build "bc/${runner_build_name}"
+
+  echo 'creating oracle service';
+  cat "${KUBE_DIR}/oracledb_service.yml" \
+    | oracle_service_name="${oracle_service_name}" \
+      oracle_pod_name="${oracle_pod_name}" \
+      envsubst \
+    | oc create -f -
 
   echo 'running oracle controller';
   cat "${ROOT_DIR}/.kube/oracledb.yml" \
