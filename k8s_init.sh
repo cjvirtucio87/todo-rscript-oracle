@@ -12,6 +12,7 @@ readonly APP_ORACLE_REQUESTS="${APP_ORACLE_REQUESTS:-cpu=1,memory=2G}";
 readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
 readonly APP_SSH_PRIVATE_KEY="${APP_SSH_PRIVATE_KEY:-${HOME}/.ssh/id_rsa}";
 readonly APP_SSH_PUBLIC_KEY="${APP_SSH_PUBLIC_KEY:-${HOME}/.ssh/id_rsa.pub}";
+readonly REGISTRY_URI="some-registry";
 
 cleanup() {
   local runner_job_name="$1";
@@ -77,6 +78,7 @@ main() {
       app_oracle_user="${APP_ORACLE_USER}" \
       app_oracle_password="${APP_ORACLE_PASSWORD}" \
       dockerfile_path=".dockerfile/Dockerfile" \
+      registry_uri="${REGISTRY_URI}" \
       runner_image_name="${runner_image_name}" \
       runner_image_version="${runner_image_version}" \
       runner_ssh_secret_name="${runner_ssh_secret_name}" \
