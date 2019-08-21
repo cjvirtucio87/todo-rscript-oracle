@@ -44,6 +44,10 @@ main() {
   local runner_image_name="${runner_name}";
   local runner_image_version="latest";
 
+  if [[ "${CLEANUP_BEFORE}" ]]; then
+    cleanup "${runner_job_name}" "${runner_build_name}" "${runner_image_name}" "${runner_ssh_secret_name}" "${oracle_service_name}" "${oracle_rc_name}"
+  fi
+
   if [[ "${CLEANUP_AFTER}" ]]; then
     trap "cleanup ${runner_job_name} ${runner_build_name} ${runner_image_name} ${runner_ssh_secret_name} ${oracle_service_name} ${oracle_rc_name}"  EXIT
   fi
