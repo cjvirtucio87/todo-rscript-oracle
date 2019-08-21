@@ -73,6 +73,11 @@ RUN set -e; \
 COPY .dockerfile/docker-entrypoint.sh "/docker-entrypoint.sh"
 COPY .dockerfile/rscript/confd "${CONTAINER_USER_HOME}/rscript/confd"
 
+RUN set -e; \
+    chgrp 0 '/docker-entrypoint.sh'; \
+    chmod u+x '/docker-entrypoint.sh'; \
+    chmod g+u '/docker-entrypoint.sh';
+
 ENV HOME="${CONTAINER_USER_HOME}"
 USER "${CONTAINER_USER}"
 WORKDIR "${CONTAINER_USER_HOME}/rscript"
