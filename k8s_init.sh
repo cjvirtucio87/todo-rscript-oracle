@@ -66,6 +66,7 @@ main() {
   cat "${KUBE_DIR}/runner_imagestream.yml" \
     | runner_image_name="${runner_image_name}" \
       envsubst \
+      env="${APP_ENV}" \
     | oc create -f -
 
   echo 'creating build config';
