@@ -95,8 +95,8 @@ main() {
   cat "${KUBE_DIR}/oracledb_service.yml" \
     | oracle_service_name="${oracle_service_name}" \
       oracle_pod_name="${oracle_pod_name}" \
-      envsubst \
       env="${APP_ENV}" \
+      envsubst \
     | oc create -f -
 
   echo 'running oracle controller';
