@@ -52,6 +52,10 @@ healthcheck_oracle() {
 }
 
 main() {
+  set -e;
+
+  echo "HOST: ${APP_ORACLE_HOST}, PORT: ${APP_ORACLE_PORT}"
+
   healthcheck_oracle \
     -t "${APP_ORACLE_TIMEOUT}" \
     -h "${APP_ORACLE_HOST}" \
@@ -71,6 +75,8 @@ main() {
   Rscript 'src/todo.R';
 
   echo "done!";
+
+  set +e;
 }
 
 main "$@";
