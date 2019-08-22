@@ -14,7 +14,7 @@ readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
 readonly APP_ORACLE_TIMEOUT="${APP_ORACLE_TIMEOUT:-30}";
 readonly APP_SSH_PRIVATE_KEY="${APP_SSH_PRIVATE_KEY:-${HOME}/.ssh/id_rsa}";
 readonly APP_SSH_PUBLIC_KEY="${APP_SSH_PUBLIC_KEY:-${HOME}/.ssh/id_rsa.pub}";
-readonly REGISTRY_URI=""${REGISTRY_URI:-your-registry";
+readonly REGISTRY_URI=""${REGISTRY_URI:-your-registry}";
 
 cleanup() {
   local runner_job_name="$1";
