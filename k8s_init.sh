@@ -3,6 +3,7 @@
 readonly ROOT_DIR="$(dirname "$(readlink -f "$0")")";
 readonly KUBE_DIR="${ROOT_DIR}/.kube";
 readonly APP_ENV='dev';
+readonly APP_NAMESPACE="${APP_NAMESPACE:-your-namespace}";
 readonly APP_ORACLE_IMAGE_NAME="${APP_ORACLE_IMAGE_NAME:-orangehrm/oracle-xe-11g}";
 readonly APP_ORACLE_IMAGE_TAG="${APP_ORACLE_IMAGE_TAG:-latest}";
 readonly APP_ORACLE_PASSWORD="${APP_ORACLE_PASSWORD:-oracle}";
@@ -10,9 +11,10 @@ readonly APP_ORACLE_SID="${APP_ORACLE_SID:-xe}";
 readonly APP_ORACLE_PORT="${APP_ORACLE_PORT:-1521}";
 readonly APP_ORACLE_REQUESTS="${APP_ORACLE_REQUESTS:-cpu=1,memory=2G}";
 readonly APP_ORACLE_USER="${APP_ORACLE_USER:-system}";
+readonly APP_ORACLE_TIMEOUT="${APP_ORACLE_TIMEOUT:-30}";
 readonly APP_SSH_PRIVATE_KEY="${APP_SSH_PRIVATE_KEY:-${HOME}/.ssh/id_rsa}";
 readonly APP_SSH_PUBLIC_KEY="${APP_SSH_PUBLIC_KEY:-${HOME}/.ssh/id_rsa.pub}";
-readonly REGISTRY_URI="some-registry";
+readonly REGISTRY_URI=""${REGISTRY_URI:-your-registry";
 
 cleanup() {
   local runner_job_name="$1";
@@ -37,6 +39,7 @@ main() {
   local oracle_pod_name="${name}-oracle-pod";
   local oracle_rc_name="${name}-oracle-rc";
   local oracle_service_name="${name}-oracle-service";
+  local oracle_service_fqdn="${name}-oracle-service.${APP_NAMESPACE}.svc.cluster.local";
   local runner_name="${name}-runner";
   local runner_build_name="${name}-runner-build";
   local runner_ssh_secret_name="${name}-runner-ssh-key";
@@ -72,11 +75,12 @@ main() {
       http_proxy="${http_proxy}" \
       https_proxy="${https_proxy}" \
       no_proxy="${no_proxy}" \
-      app_oracle_host="${oracle_name}" \
+      app_oracle_host="${oracle_service_fqdn}" \
       app_oracle_port="${APP_ORACLE_PORT}" \
       app_oracle_db="${APP_ORACLE_SID}" \
       app_oracle_user="${APP_ORACLE_USER}" \
       app_oracle_password="${APP_ORACLE_PASSWORD}" \
+      app_oracle_timeout="${APP_ORACLE_TIMEOUT}" \
       dockerfile_path=".dockerfile/Dockerfile" \
       registry_uri="${REGISTRY_URI}" \
       runner_image_name="${runner_image_name}" \
@@ -114,7 +118,8 @@ main() {
     | runner_job_name="${runner_job_name}" \
       runner_pod_name="${runner_pod_name}" \
       env="${APP_ENV}" \
-      runner_image="${runner_image_name}" \
+      registry_uri="${REGISTRY_URI}" \
+      runner_image="${runner_image_name}:${runner_image_version}" \
       runner_name=${runner_name} \
       envsubst \
     | oc create -f -
